@@ -1,0 +1,31 @@
+name: Deploy Script
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build or run script
+        run: node run.js
+
+      - name: Archive output
+        run: zip -r output.zip .
+        if: success()
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: heavens-above-build
+          path: output.zip
