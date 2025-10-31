@@ -2,15 +2,37 @@ name: Dependency Updates
 
 on:
   schedule:
-    - cron: "0 12 * * 1" # Every Monday noon
-  workflow_dispatch:
+    - cron: "0 12 * * 1" # Every Monday at noon
+  workflow_dispatch:      # allows manual trigger
 
 jobs:
   update:
     runs-on: ubuntu-latest
+
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install npm-check-updates
+        run: npm install -g npm-check-updates
+
       - name: Check for outdated dependencies
         run: |
-          npm install -g npm-check-updates
-          ncu -u
+          cd $GITHUB_WORKSPACE
+          ncu -u || true
           npm install
+
+      - name: Upload dependency report
+        run: |
+          ncu > dependency_report.txt || true
+        shell: bash
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dependency-report
+          path: dependency_report.txt
